@@ -1,6 +1,6 @@
 package com.andersonmorales.pedidosya.enums;
 
-public class Rol {
+public enum Rol {
     ADMIN,
     REPARTIDOR,
     CLIENTE

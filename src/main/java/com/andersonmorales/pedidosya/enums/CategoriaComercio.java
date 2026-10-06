@@ -1,6 +1,6 @@
 package com.andersonmorales.pedidosya.enums;
 
-public class CategoriaComercio {
+public enum CategoriaComercio {
     RESTAURANTE,
     SUPERMERCADO,
     FARMACIA
