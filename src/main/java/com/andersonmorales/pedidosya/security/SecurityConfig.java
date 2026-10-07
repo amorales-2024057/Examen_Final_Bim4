@@ -86,9 +86,16 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Proveedor de codificación de contraseñas de usuarios mediante el algoritmo BCrypt.
+     * Configurado con factor de costo 12 (4096 iteraciones de hashing) cumpliendo las
+     * recomendaciones internacionales de ciberseguridad OWASP para máxima resistencia a ataques de fuerza bruta.
+     *
+     * @return Instancia de {@link BCryptPasswordEncoder} con fuerza 12.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean

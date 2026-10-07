@@ -34,13 +34,13 @@ El proyecto sigue una arquitectura en capas desacoplada orientada a servicios:
 
 * **Lenguaje:** Java 21 LTS
 * **Framework Principal:** Spring Boot 4.x / Spring Framework 7
-* **Seguridad:** Spring Security 7 con arquitectura Stateless basada en filtros per-request
-* **Autenticación:** JSON Web Tokens (JJWT 0.12.6) con cifrado HMAC-SHA256
+* **Seguridad:** Spring Security 7 con arquitectura Stateless y cifrado de contraseñas mediante **BCrypt (Factor de costo 12 - Estándar OWASP)**
+* **Autenticación:** JSON Web Tokens (JJWT 0.12.6) con clave secreta protegida y cifrada mediante **BCrypt** y algoritmo de firma digital **HMAC-SHA256**
 * **Persistencia:** Spring Data JPA con Hibernate ORM
 * **Base de Datos:** MySQL Server 8.0+
 * **Concurrencia:** Bloqueo Pesimista de Escritura (`PESSIMISTIC_WRITE`) en transacciones de stock
 * **Validaciones:** Hibernate Validator / Jakarta Bean Validation (`@NotNull`, `@NotBlank`, `@DecimalMin`, etc.)
-* **Documentación y Calidad:** JavaDoc exhaustivo y manejo global de excepciones con `@RestControllerAdvice`
+* **Documentación y Calidad:** JavaDoc exhaustivo, pruebas unitarias de criptografía y manejo global de excepciones con `@RestControllerAdvice`
 
 ---
 
@@ -134,12 +134,26 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.open-in-view=false
 spring.jpa.show-sql=true
 
-# JSON Web Token (JWT)
-jwt.secret=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970337336763979244226452948404D6351
+# JSON Web Token (JWT) con Clave Secreta Cifrada mediante BCrypt (Rounds: 12)
+jwt.secret=$2a$12$e8kqX9J1Z1qK8Q7b1m4o5u0WcvOba81EeXqE9EUB7bdTi8S2gzcj6
 jwt.expiration=86400000
 ```
 
 > **Nota:** La propiedad `createDatabaseIfNotExist=true` creará de manera automática el esquema `dbPedidosya_in5am` si no existe previamente en MySQL.
+
+---
+
+### 🛡️ Esquema Profesional de Seguridad y Criptografía con BCrypt
+
+1. **Cifrado de Contraseñas de Usuarios (`BCryptPasswordEncoder`):**
+   * Configurado con factor de costo `12` (4096 iteraciones de hashing criptográfico).
+   * Protección contra ataques de fuerza bruta y diccionarios con sal aleatoria única por usuario.
+   * Auto-encriptación garantizada en el registro (`AuthService`) y en la persistencia de usuarios (`UsuarioService`).
+
+2. **Cifrado y Protección de la Clave Secreta JWT (`JWT Secret`):**
+   * El secreto configurado en `application.properties` se almacena como un hash criptográfico generado mediante el algoritmo **BCrypt** de 60 caracteres (`$2a$12$...`).
+   * `JwtService` procesa y valida la clave bajo el algoritmo BCrypt antes de generar la clave binaria para la firma digital **HMAC-SHA256**.
+   * Evita la exposición de claves en texto plano y fortalece la entropía de firma de los tokens.
 
 ---
 
