@@ -38,7 +38,7 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
 
-        log.info("Inicializando datos semilla para PedidosYa...");
+        log.info("Inicializando datos semilla para PedidosYa (contraseñas cifradas mediante BCrypt con factor 12)...");
 
         // 1. Usuarios de prueba
         Usuario admin = Usuario.builder()

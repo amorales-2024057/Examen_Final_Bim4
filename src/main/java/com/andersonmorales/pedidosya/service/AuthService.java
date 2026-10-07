@@ -11,6 +11,7 @@ import com.andersonmorales.pedidosya.security.JwtService;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,9 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Servicio encargado de la autenticación, registro de nuevos usuarios y emisión de tokens JWT.
+ * Aplica encriptación de contraseñas mediante BCrypt y generación de tokens JWT securizados.
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
@@ -30,7 +33,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     /**
-     * Registra un nuevo usuario cliente en el sistema y retorna su token de acceso JWT.
+     * Registra un nuevo usuario cliente en el sistema, encriptando su contraseña con BCrypt
+     * y retornando su token de acceso JWT.
      *
      * @param request Datos del registro del usuario.
      * @return DTO {@link AuthResponse} con el token de autenticación.
@@ -51,6 +55,7 @@ public class AuthService {
                 .build();
 
         Usuario guardado = usuarioRepository.save(usuario);
+        log.info("Nuevo usuario registrado exitosamente con contraseña encriptada por BCrypt: {}", guardado.getEmail());
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("rol", guardado.getRol().name());
@@ -62,7 +67,8 @@ public class AuthService {
     }
 
     /**
-     * Autentica las credenciales de un usuario existente y emite un token de acceso JWT.
+     * Autentica las credenciales de un usuario existente verificando la contraseña con BCrypt
+     * y emitiendo un token de acceso JWT firmado con la clave segura.
      *
      * @param request Credenciales de acceso (email y contraseña).
      * @return DTO {@link AuthResponse} con el token de autenticación.
@@ -76,6 +82,8 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByEmail(request.email().trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + request.email()));
 
+        log.info("Autenticación exitosa verificada con BCrypt para el usuario: {}", usuario.getEmail());
+
         Map<String, Object> claims = new HashMap<>();
         claims.put("rol", usuario.getRol().name());
         claims.put("nombre", usuario.getNombre());
@@ -85,4 +93,3 @@ public class AuthService {
         return AuthResponse.bearer(token, usuario.getEmail(), usuario.getRol());
     }
 }
-
